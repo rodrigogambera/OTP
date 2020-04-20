@@ -4,7 +4,6 @@
 # by Rodrigo Elias - rodrigo.elias@mieux.com.br
 # 2020-03-03 19:38
 
-# from dateutil.rrule import rrule, DAILY
 import configparser
 import urllib3
 import certifi
@@ -19,6 +18,7 @@ config = configparser.ConfigParser()
 config.sections()
 config.read('ANACSirosData.cfg')
 
+yesterday = datetime.datetime.strftime(datetime.datetime.now() - datetime.timedelta(1), '%Y-%m-%d')
 cnx = pyodbc.connect(
     server = config['Database']['Server'],
     database = config['Database']['Database'],
@@ -28,7 +28,7 @@ cnx = pyodbc.connect(
     driver = config['Database']['Driver']
 )
 cursor = cnx.cursor()
-cursor.execute("SELECT [dbo].[Companies].[iata_code] AS \'CompanyCode\', [dbo].[PlannedFlights].[flight_number] AS \'FlightNumber\', CONVERT(date, [dbo].[PlannedFlights].[departure_time]) AS \'FlightDate\' FROM [dbo].[PlannedFlights], [dbo].[Companies] WHERE [dbo].[PlannedFlights].[company_code] = [dbo].[Companies].[icao_code] AND CONVERT(date, [dbo].[PlannedFlights].[departure_time]) = \'2020-04-19\' AND [dbo].[Companies].[iata_code] != \'\' AND [dbo].[PlannedFlights].[active] = 1 GROUP BY [dbo].[Companies].[iata_code], [dbo].[PlannedFlights].[flight_number], CONVERT(date, [dbo].[PlannedFlights].[departure_time]) ORDER BY [dbo].[Companies].[iata_code], [dbo].[PlannedFlights].[flight_number] ASC")
+cursor.execute("SELECT [dbo].[Companies].[iata_code] AS \'CompanyCode\', [dbo].[PlannedFlights].[flight_number] AS \'FlightNumber\', CONVERT(date, [dbo].[PlannedFlights].[departure_time]) AS \'FlightDate\' FROM [dbo].[PlannedFlights], [dbo].[Companies] WHERE [dbo].[PlannedFlights].[company_code] = [dbo].[Companies].[icao_code] AND CONVERT(date, [dbo].[PlannedFlights].[departure_time]) = \'' + ? +'\' AND [dbo].[Companies].[iata_code] != \'\' AND [dbo].[PlannedFlights].[active] = 1 GROUP BY [dbo].[Companies].[iata_code], [dbo].[PlannedFlights].[flight_number], CONVERT(date, [dbo].[PlannedFlights].[departure_time]) ORDER BY [dbo].[Companies].[iata_code], [dbo].[PlannedFlights].[flight_number] ASC", yesterday)
 
 print(datetime.datetime.now())
 for row in cursor.fetchall():
